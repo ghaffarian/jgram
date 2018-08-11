@@ -1,26 +1,17 @@
-package jGraM;
-
-import static org.junit.Assert.assertEquals;
+package jgram;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.jgrapht.util.SupplierUtil;
-import org.junit.Test;
 
 /**
- * Unit test for simple App.
+ * Hello JGraphT!
  */
-public class AppTest {
+public class App {
 
-    /**
-     * Rigorous Test :-)
-     */
-    @Test
-    public void rigorousTest() {
-        
-        new App().test();
-        
+    public void test() {
+
         Graph<String, DefaultEdge> graph = GraphTypeBuilder
                 .directed()
                 .allowingMultipleEdges(true)
@@ -34,14 +25,17 @@ public class AppTest {
         String v2 = graph.addVertex();
 
         graph.addEdge(v0, v1);
-        graph.addEdge(v0, v2);
         graph.addEdge(v1, v2);
+        graph.addEdge(v0, v2);
 
-        assertEquals(3, graph.vertexSet().size());
-        assertEquals(3, graph.edgeSet().size());
+        for (String v : graph.vertexSet()) {
+            System.out.println("vertex: " + v);
+        }
 
-        assertEquals(2, graph.outDegreeOf(v0));
-        assertEquals(1, graph.outDegreeOf(v1));
-        assertEquals(0, graph.outDegreeOf(v2));
+        for (DefaultEdge e : graph.edgeSet()) {
+            System.out.println("edge: " + e);
+        }
+
     }
+
 }
