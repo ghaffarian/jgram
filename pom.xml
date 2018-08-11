@@ -6,7 +6,7 @@
     <artifactId>jGraM</artifactId>
     <version>0.2</version>
     <packaging>jar</packaging>
-    <name>Sample JGraphT Application</name>
+    <name>jGraM</name>
     
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
