@@ -3,10 +3,10 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>ghaffarian</groupId>
-    <artifactId>jGraM</artifactId>
+    <artifactId>jgram</artifactId>
     <version>0.2</version>
     <packaging>jar</packaging>
-    <name>jGraM</name>
+    <name>JGRAM</name>
     
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
