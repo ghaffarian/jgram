@@ -19,7 +19,7 @@ JGRAM is intended to fully support output formats of the [PROGEX tool](https://g
 
 This is an internal project by members of our lab from [Amirkabir University of Technology](http://aut.ac.ir), as a sub-project of the PhD thesis of [Seyed Mohammad Ghaffarian](http://linkedin.com/in/smghaffarian). Seyed Mohammad Ghaffarian is the main developer and owner of JGRAM.
 
-The development of PROGEX is done using the [Netbeans IDE](https://netbeans.org), with an [Apache Maven](https://maven.apache.org) project structure, under the terms of the [LGPL-v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) license.
+The development of JGRAM is done using the [Netbeans IDE](https://netbeans.org), with an [Apache Maven](https://maven.apache.org) project structure, under the terms of the [LGPL-v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) license.
 
 
 ## Why We Developed JGRAM?
@@ -32,5 +32,5 @@ library by myself.
 
 ## Getting Started
 
-> **JGRAM is still in early development stage** and is not suitable to be used in any manner.
+> **JGRAM is still in EARLY DEVELOPMENT STAGE** and *NOT SUITABLE TO BE USED IN ANY MANNER*.
 > As soon as we publish a usable release, this section will be updated with proper instructions.
