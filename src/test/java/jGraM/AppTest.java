@@ -18,6 +18,9 @@ public class AppTest {
      */
     @Test
     public void rigorousTest() {
+        
+        new App().test();
+        
         Graph<String, DefaultEdge> graph = GraphTypeBuilder
                 .directed()
                 .allowingMultipleEdges(true)

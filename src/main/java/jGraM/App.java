@@ -10,7 +10,7 @@ import org.jgrapht.util.SupplierUtil;
  */
 public class App {
 
-    public static void main(String[] args) {
+    public void test() {
 
         Graph<String, DefaultEdge> graph = GraphTypeBuilder
                 .directed()
