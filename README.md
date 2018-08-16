@@ -1,6 +1,6 @@
 # JGRAM (Java Graph Mining) Library
 
-JGRAM is a [Java](https://en.wikipedia.org/wiki/Java_(programming_language)) library for Graph-Mining. Graph-Mining is the task of recognizing and extracting 
+JGRAM is a [Java](https://en.wikipedia.org/wiki/Java_(programming_language)) library for *Graph-Mining*. Graph-Mining is the task of recognizing and extracting 
 interesting patterns from a database of graphs. Graph-Mining differs from data-mining in the sense that data-mining is only concerned with patterns in data values, while graphs are connected and structured-data, and the structure is as important as data-values themself.
 
 Graph-Mining includes many techniques and sub-areas, where implementation of some of the most important algorithms is provided in this library. The main sub-areas of graph-mining that are targeted in JGRAM are:
@@ -32,5 +32,5 @@ library by myself.
 
 ## Getting Started
 
-> **JGRAM is still in EARLY DEVELOPMENT STAGE** and *NOT SUITABLE TO BE USED IN ANY MANNER*.
+> **JGRAM IS STILL IN EARLY DEVELOPMENT STAGE** and *NOT SUITABLE TO BE USED IN ANY MANNER*. \
 > As soon as we publish a usable release, this section will be updated with proper instructions.
