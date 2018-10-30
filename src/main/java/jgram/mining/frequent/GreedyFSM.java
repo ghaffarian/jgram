@@ -48,8 +48,8 @@ public class GreedyFSM implements FrequentSubgraphMining {
         // 3. Sort all frequent edges
         allEdges = CollectionUtils.sortByValue(allEdges);
         // 4. start generating graphs using frequent edges and test their frequency
-        Graph<V,E> g;
-        result = new HashSet<>();
+        //Graph<V,E> g = <>();
+        result = new HashSet<Graph<V,E>>();
         return result;
     }
     
