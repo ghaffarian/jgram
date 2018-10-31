@@ -60,7 +60,7 @@ public class GreedyFSM implements FrequentSubgraphMining {
                 if (entry.equals(edge))
                     break;
             }
-            //
+            // now start building 
             
             LinkedHashMap
         }
