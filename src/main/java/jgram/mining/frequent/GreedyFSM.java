@@ -1,12 +1,13 @@
 /*** In The Name of Allah ***/
 package jgram.mining.frequent;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import jgram.utils.CollectionUtils;
+import org.javatuples.Triplet;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.SimpleGraph;
 
@@ -25,31 +26,47 @@ public class GreedyFSM implements FrequentSubgraphMining {
     }
 
     @Override
-    public <V,E> Set<Graph<V,E>> mine(Set<Graph<V,E>> graphSet) {
+    public Set<Graph> mine(Set<Graph> graphSet) {
         // 1. Calculate the frequency for all edges from all graphs
-        Map<E, Integer> allEdges = new HashMap<>(graphSet.size() * 16, 0.8f);
-        for (Graph<V,E> graph: graphSet) {
-            for (E edge: graph.edgeSet()) {
-                Integer freq = allEdges.get(edge);
+        Class edgeClass = null;
+        Map<Triplet, Integer> allEdges = new LinkedHashMap<>(graphSet.size() * 16, 0.8f);
+        for (Graph graph: graphSet) {
+            for (Object edge: graph.edgeSet()) {
+                edgeClass = edge.getClass();
+                Triplet edgeInfo = Triplet.with(graph.getEdgeSource(edge), graph.getEdgeTarget(edge), edge);
+                Integer freq = allEdges.get(edgeInfo);
                 if (freq == null)
-                    allEdges.put(edge, 1);
+                    allEdges.put(edgeInfo, 1);
                 else
-                    allEdges.put(edge, ++freq);
+                    allEdges.put(edgeInfo, ++freq);
             }
         }
         // 2. Remove non-frequent edges
         int threshold = Math.round(minSup * graphSet.size());
-        Iterator<Map.Entry<E, Integer>> it = allEdges.entrySet().iterator();
+        Iterator<Map.Entry<Triplet, Integer>> it = allEdges.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<E, Integer> entry = it.next();
+            Map.Entry<Triplet, Integer> entry = it.next();
             if (entry.getValue() < threshold)
                 it.remove();
         }
         // 3. Sort all frequent edges
         allEdges = CollectionUtils.sortByValue(allEdges);
         // 4. start generating graphs using frequent edges and test their frequency
-        //Graph<V,E> g = <>();
-        result = new HashSet<Graph<V,E>>();
+        for (Map.Entry<Triplet, Integer> edge: allEdges.entrySet()) {
+            // iterate until you pass the current edge
+            it = allEdges.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<Triplet, Integer> entry = it.next();
+                if (entry.equals(edge))
+                    break;
+            }
+            //
+            
+            LinkedHashMap
+        }
+        Graph g = new SimpleGraph(edgeClass);
+        g.add
+        result = new HashSet<Graph>();
         return result;
     }
     

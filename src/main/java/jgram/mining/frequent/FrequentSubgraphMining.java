@@ -29,7 +29,7 @@ public interface FrequentSubgraphMining {
      * @param graphSet  the input set of graphs to be mined
      * @return          the result set of frequent subgraphs
      */
-    public <V,E> Set<Graph<V,E>> mine(Set<Graph<V,E>> graphSet);
+    public Set<Graph> mine(Set<Graph> graphSet);
     
     /**
      * Fetch the set of frequent subgraphs resulted after the mining operation.
