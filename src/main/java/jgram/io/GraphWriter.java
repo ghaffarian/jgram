@@ -16,6 +16,12 @@ import org.jgrapht.Graph;
  */
 public class GraphWriter {
     
+    /**
+     * 
+     * @param graph
+     * @param filePath
+     * @throws IOException 
+     */
     public static void writeDOT(Graph graph, String filePath) throws IOException {
         if (!filePath.toLowerCase().endsWith(".dot"))
             throw new IllegalArgumentException("File-path does not end with .dot suffix!");
