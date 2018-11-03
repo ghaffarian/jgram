@@ -15,7 +15,9 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.AbstractBaseGraph;
 
 /**
- * A simple greedy frequent subgraph mining (FSM) algorithm designed by the author.
+ * A naive frequent subgraph mining (FSM) algorithm.
+ * This algorithm is not efficient, nor scalable!
+ * Just for getting started with FSM!
  * 
  * @author Seyed Mohammad Ghaffarian
  */
@@ -66,7 +68,7 @@ public class NaiveFSM implements FrequentSubgraphMining {
         }
         // 3. Sort all frequent edges
         allEdges = CollectionUtils.sortByValue(allEdges);
-        // 4. start generating graphs using frequent edges and check their frequency
+        // 4. Start generating graphs using frequent edges and check their frequency
         Deque<Triplet> frequentEdges = new ArrayDeque<>(allEdges.size());
         for (Map.Entry<Triplet, Integer> edge: allEdges.entrySet())
             frequentEdges.add(edge.getKey());
