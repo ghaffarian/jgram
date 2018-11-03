@@ -19,7 +19,7 @@ import org.jgrapht.graph.AbstractBaseGraph;
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class GreedyFSM implements FrequentSubgraphMining {
+public class NaiveFSM implements FrequentSubgraphMining {
     
     private final int AVRG_EDGE_PER_GRAPH = 16;
     private final int MIN_LIST_CAPACITY = 16;
@@ -34,7 +34,7 @@ public class GreedyFSM implements FrequentSubgraphMining {
      * 
      * @param minSup  the minimum support ratio (0.0 .. 1.0) to consider a subgraph as frequent
      */
-    public GreedyFSM(float minSup) {
+    public NaiveFSM(float minSup) {
         result = null;
         graphDataset = null;
         MIN_SUP = minSup;
