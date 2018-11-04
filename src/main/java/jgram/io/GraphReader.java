@@ -2,10 +2,13 @@
 package jgram.io;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultUndirectedGraph;
 
 /**
  * Reads graph objects from various input sources.
@@ -14,41 +17,49 @@ import org.jgrapht.Graph;
  */
 public class GraphReader {
     
+    /**
+     * 
+     * @param filePath
+     * @return
+     * @throws IOException 
+     */
     public static Graph readDOT(String filePath) throws IOException {
         if (!filePath.toLowerCase().endsWith(".dot"))
             throw new IllegalArgumentException("File-path does not end with .dot suffix!");
-		String filename = new File(filePath).getName();
+        Graph graph;
 		try (BufferedReader dot = new BufferedReader(new FileReader(filePath))) {
-            while (dot.ready()) {
-                String line = dot.readLine();
-                
+            // read graph type
+            String line = dot.readLine().trim();
+            if (line.startsWith("digraph"))
+                graph = new DefaultDirectedGraph(String.class);
+            else //if (line.startsWith("graph") && line.endsWith("{"))
+                graph = new DefaultUndirectedGraph(String.class);
+            dot.readLine(); // skip empty line
+            // read graph vertex
+			Map<String, String> vertexNames = new LinkedHashMap<>();
+            while (!(line = dot.readLine()).trim().isEmpty()) {
+                String[] tokens = line.split("\\s+");
+                int start = tokens[1].indexOf("[label=\"") + 8;
+                int end = tokens[1].lastIndexOf("\"];");
+                String vertex = tokens[1].substring(start, end);
+                vertexNames.put(tokens[0], vertex);
+                graph.addVertex(vertex);
             }
-            dot.
-            String graphName = filename.substring(0, filename.lastIndexOf('.'));
-            if (graph.getType().isDirected())
-                dot.println("digraph " + graphName + " {\n");
-            else
-                dot.println("graph " + graphName + " {\n");
-			Map<Object, String> nodeNames = new LinkedHashMap<>();
-			int nodeCounter = 1;
-			for (Object node: graph.vertexSet()) {
-				String name = "n" + nodeCounter++;
-				nodeNames.put(node, name);
-				StringBuilder label = new StringBuilder("   [label=\"");
-				if (!node.toString().isEmpty())
-    				label.append(StringUtils.escape(node.toString())).append("\"];");
-				dot.println("   " + name + label.toString());
-			}
-			dot.println();
-			for (Object edge: graph.edgeSet()) {
-				String src = nodeNames.get(graph.getEdgeSource(edge));
-				String trg = nodeNames.get(graph.getEdgeTarget(edge));
-				if (edge.toString().isEmpty())
-					dot.println("   " + src + " -> " + trg + ";");
-				else
-					dot.println("   " + src + " -> " + trg + "   [label=\"" + StringUtils.escape(edge.toString()) + "\"];");
-			}
-			dot.println("\n}");
+            // read graph edges
+            while (!(line = dot.readLine()).trim().isEmpty()) {
+                String[] tokens = line.split("\\s+");
+                if (tokens.length > 3) {
+                    int start = tokens[3].indexOf("[label=\"") + 8;
+                    int end = tokens[3].lastIndexOf("\"];");
+                    String edge = tokens[3].substring(start, end);
+                    graph.addEdge(vertexNames.get(tokens[0]), vertexNames.get(tokens[2]), edge);
+                } else {
+                    // remove semicolon
+                    tokens[2] = tokens[2].substring(0, tokens[2].length() - 1);
+                    graph.addEdge(vertexNames.get(tokens[0]), vertexNames.get(tokens[2]));
+                }
+            }
+			return graph;
 		}
     }
     
