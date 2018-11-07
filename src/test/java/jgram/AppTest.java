@@ -1,6 +1,5 @@
 package jgram;
 
-import jgram.App;
 import static org.junit.Assert.assertEquals;
 
 import org.jgrapht.Graph;
