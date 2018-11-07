@@ -18,10 +18,12 @@ import org.jgrapht.graph.DefaultUndirectedGraph;
 public class GraphReader {
     
     /**
+     * Reads a DOT file and returns a single graph represented in the file.
+     * Note that this method cannot read the general DOT language;
+     * but only a small subset as written by the `GraphWriter.writeDOT(...)` method.
      * 
-     * @param filePath
-     * @return
-     * @throws IOException 
+     * @param filePath  path of the DOT file to read
+     * @return          graph object constructed from the given DOT file
      */
     public static Graph readDOT(String filePath) throws IOException {
         if (!filePath.toLowerCase().endsWith(".dot"))
@@ -34,10 +36,11 @@ public class GraphReader {
                 graph = new DefaultDirectedGraph(String.class);
             else //if (line.startsWith("graph") && line.endsWith("{"))
                 graph = new DefaultUndirectedGraph(String.class);
-            dot.readLine(); // skip empty line
-            // read graph vertex
+            // skip any blank lines
+            while (!(line = dot.readLine()).trim().equals("// graph-vertices")) ;
+            // read graph vertices
 			Map<String, String> vertexNames = new LinkedHashMap<>();
-            while (!(line = dot.readLine()).trim().isEmpty()) {
+            while (!(line = dot.readLine()).trim().equals("// graph-edges")) {
                 String[] tokens = line.split("\\s+");
                 int start = tokens[1].indexOf("[label=\"") + 8;
                 int end = tokens[1].lastIndexOf("\"];");
@@ -46,7 +49,7 @@ public class GraphReader {
                 graph.addVertex(vertex);
             }
             // read graph edges
-            while (!(line = dot.readLine()).trim().isEmpty()) {
+            while (!(line = dot.readLine()).trim().equals("// end-of-graph")) {
                 String[] tokens = line.split("\\s+");
                 if (tokens.length > 3) {
                     int start = tokens[3].indexOf("[label=\"") + 8;
@@ -63,6 +66,13 @@ public class GraphReader {
 		}
     }
     
+    /**
+     * Reads a DOT file and returns a single graph represented in the file.
+     * NOT IMPLEMENTED YET!
+     * 
+     * @param filePath  path of the JSON file to read
+     * @return          graph object constructed from the given JSON file
+     */
     public static Graph readJSON(String filePath) {
         throw new UnsupportedOperationException("Reading Graphs from JSON is NOT Implemented Yet!");
     }
