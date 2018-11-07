@@ -32,6 +32,7 @@ public class GraphWriter {
                 dot.println("digraph " + graphName + " {\n");
             else
                 dot.println("graph " + graphName + " {\n");
+            dot.println("   // graph-vertices");
 			Map<Object, String> nodeNames = new LinkedHashMap<>();
 			int nodeCounter = 1;
 			for (Object node: graph.vertexSet()) {
@@ -42,7 +43,7 @@ public class GraphWriter {
     				label.append(StringUtils.escape(node.toString())).append("\"];");
 				dot.println("   " + name + label.toString());
 			}
-			dot.println();
+			dot.println("   // graph-edges");
 			for (Object edge: graph.edgeSet()) {
 				String src = nodeNames.get(graph.getEdgeSource(edge));
 				String trg = nodeNames.get(graph.getEdgeTarget(edge));
@@ -51,7 +52,7 @@ public class GraphWriter {
 				else
 					dot.println("   " + src + " -> " + trg + "   [label=\"" + StringUtils.escape(edge.toString()) + "\"];");
 			}
-			dot.println("\n}");
+			dot.println("   // end-of-graph\n}");
 		}
     }
     
