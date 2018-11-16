@@ -27,32 +27,36 @@ public class GraphWriter {
             throw new IllegalArgumentException("File-path does not end with .dot suffix!");
 		String filename = new File(filePath).getName();
 		try (PrintWriter dot = new PrintWriter(filePath, "UTF-8")) {
+            String edgeSymbol;
             String graphName = filename.substring(0, filename.lastIndexOf('.'));
-            if (graph.getType().isDirected())
-                dot.println("digraph " + graphName + " {\n");
-            else
-                dot.println("graph " + graphName + " {\n");
-            dot.println("   // graph-vertices");
+            if (graph.getType().isDirected()) {
+                dot.println("digraph " + graphName + " {");
+                edgeSymbol = " -> ";
+            } else {
+                dot.println("graph " + graphName + " {");
+                edgeSymbol = " -- ";
+            }
+            dot.println("  // graph-vertices");
 			Map<Object, String> nodeNames = new LinkedHashMap<>();
 			int nodeCounter = 1;
 			for (Object node: graph.vertexSet()) {
-				String name = "n" + nodeCounter++;
+				String name = "v" + nodeCounter++;
 				nodeNames.put(node, name);
-				StringBuilder label = new StringBuilder("   [label=\"");
+				StringBuilder label = new StringBuilder("  [label=\"");
 				if (!node.toString().isEmpty())
     				label.append(StringUtils.escape(node.toString())).append("\"];");
-				dot.println("   " + name + label.toString());
+				dot.println("  " + name + label.toString());
 			}
-			dot.println("   // graph-edges");
+			dot.println("  // graph-edges");
 			for (Object edge: graph.edgeSet()) {
 				String src = nodeNames.get(graph.getEdgeSource(edge));
 				String trg = nodeNames.get(graph.getEdgeTarget(edge));
 				if (edge.toString().isEmpty())
-					dot.println("   " + src + " -> " + trg + ";");
+					dot.println("  " + src + edgeSymbol + trg + ";");
 				else
-					dot.println("   " + src + " -> " + trg + "   [label=\"" + StringUtils.escape(edge.toString()) + "\"];");
+					dot.println("  " + src + edgeSymbol + trg + "  [label=\"" + StringUtils.escape(edge.toString()) + "\"];");
 			}
-			dot.println("   // end-of-graph\n}");
+			dot.println("  // end-of-graph\n}");
 		}
     }
     

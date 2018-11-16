@@ -25,41 +25,46 @@ public class GraphReader {
      * @param filePath  path of the DOT file to read
      * @return          graph object constructed from the given DOT file
      */
-    public static Graph readDOT(String filePath) throws IOException {
+    public static Graph<String,String> readDOT(String filePath) throws IOException {
         if (!filePath.toLowerCase().endsWith(".dot"))
             throw new IllegalArgumentException("File-path does not end with .dot suffix!");
-        Graph graph;
+        Graph<String,String> graph;
 		try (BufferedReader dot = new BufferedReader(new FileReader(filePath))) {
             // read graph type
             String line = dot.readLine().trim();
             if (line.startsWith("digraph"))
-                graph = new DefaultDirectedGraph(String.class);
+                graph = new DefaultDirectedGraph<>(String.class);
             else //if (line.startsWith("graph") && line.endsWith("{"))
-                graph = new DefaultUndirectedGraph(String.class);
+                graph = new DefaultUndirectedGraph<>(String.class);
             // skip any blank lines
             while (!(line = dot.readLine()).trim().equals("// graph-vertices")) ;
             // read graph vertices
 			Map<String, String> vertexNames = new LinkedHashMap<>();
             while (!(line = dot.readLine()).trim().equals("// graph-edges")) {
+                line = line.trim();
                 String[] tokens = line.split("\\s+");
-                int start = tokens[1].indexOf("[label=\"") + 8;
-                int end = tokens[1].lastIndexOf("\"];");
-                String vertex = tokens[1].substring(start, end);
+                int start = line.indexOf("[label=\"") + 8;
+                int end = line.lastIndexOf("\"];");
+                String vertex = line.substring(start, end);
                 vertexNames.put(tokens[0], vertex);
+                //System.out.println(tokens[0] + ":  " + vertex);
                 graph.addVertex(vertex);
             }
             // read graph edges
             while (!(line = dot.readLine()).trim().equals("// end-of-graph")) {
+                line = line.trim();
                 String[] tokens = line.split("\\s+");
                 if (tokens.length > 3) {
-                    int start = tokens[3].indexOf("[label=\"") + 8;
-                    int end = tokens[3].lastIndexOf("\"];");
-                    String edge = tokens[3].substring(start, end);
+                    int start = line.indexOf("[label=\"") + 8;
+                    int end = line.lastIndexOf("\"];");
+                    String edge = line.substring(start, end);
                     graph.addEdge(vertexNames.get(tokens[0]), vertexNames.get(tokens[2]), edge);
+                    //System.out.println(tokens[0] + " -> " + tokens[2] + ":  " + edge);
                 } else {
                     // remove semicolon
                     tokens[2] = tokens[2].substring(0, tokens[2].length() - 1);
-                    graph.addEdge(vertexNames.get(tokens[0]), vertexNames.get(tokens[2]));
+                    graph.addEdge(vertexNames.get(tokens[0]), vertexNames.get(tokens[2]), "");
+                    //System.out.println(tokens[0] + " -> " + tokens[2]);
                 }
             }
 			return graph;
