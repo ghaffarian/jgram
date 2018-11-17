@@ -4,15 +4,14 @@ package jgram.mining.frequent;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import jgram.graphs.Edge;
+import jgram.graphs.Graph;
 import jgram.utils.CollectionUtils;
-import jgram.utils.GraphUtils;
-import org.javatuples.Triplet;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.AbstractBaseGraph;
 
 /**
  * A naive frequent subgraph mining (FSM) algorithm.
@@ -21,15 +20,15 @@ import org.jgrapht.graph.AbstractBaseGraph;
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class NaiveFSM implements FrequentSubgraphMining {
+public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
     
     private final int AVRG_EDGE_PER_GRAPH = 16;
     private final int MIN_LIST_CAPACITY = 16;
     private final float MIN_SUP;
     
     private boolean miningDone;
-    private List<Graph> result;
-    private List<Graph> graphDataset;
+    private List<Graph<V,E>> result;
+    private List<Graph<V,E>> graphDataset;
 
     /**
      * Construct a new instance of greedy-frequent-subgraph-mining.
@@ -44,37 +43,37 @@ public class NaiveFSM implements FrequentSubgraphMining {
     }
 
     @Override
-    public List<Graph> mine(List<Graph> graphDataset) {
-        this.graphDataset = graphDataset;
+    public List<Graph<V, E>> mine(List<Graph<V, E>> graphSet) {
+        this.graphDataset = graphSet;
         // 1. Calculate the frequency for all edges from all graphs
-        Map<Triplet, Integer> allEdges = new LinkedHashMap<>(graphDataset.size() * AVRG_EDGE_PER_GRAPH, 0.8f);
+        Map<Edge, Integer> allEdgesFrequencies = new LinkedHashMap<>(graphDataset.size() * AVRG_EDGE_PER_GRAPH, 0.8f);
         for (Graph graph: graphDataset) {
-            for (Object edge: graph.edgeSet()) {
-                Triplet edgeInfo = Triplet.with(graph.getEdgeSource(edge), graph.getEdgeTarget(edge), edge);
-                Integer freq = allEdges.get(edgeInfo);
+            Enumeration<Edge<V,E>> edges = graph.enumerateAllEdges();
+            while (edges.hasMoreElements()) {
+                Edge<V,E> edge = edges.nextElement();
+                Integer freq = allEdgesFrequencies.get(edge);
                 if (freq == null)
-                    allEdges.put(edgeInfo, 1);
+                    allEdgesFrequencies.put(edge, 1);
                 else
-                    allEdges.put(edgeInfo, ++freq);
+                    allEdgesFrequencies.put(edge, ++freq);
             }
         }
         // 2. Remove non-frequent edges
         int threshold = Math.round(MIN_SUP * graphDataset.size());
-        Iterator<Map.Entry<Triplet, Integer>> it = allEdges.entrySet().iterator();
+        Iterator<Map.Entry<Edge, Integer>> it = allEdgesFrequencies.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<Triplet, Integer> entry = it.next();
+            Map.Entry<Edge, Integer> entry = it.next();
             if (entry.getValue() < threshold)
                 it.remove();
         }
         // 3. Sort all frequent edges
-        allEdges = CollectionUtils.sortByValue(allEdges);
+        allEdgesFrequencies = CollectionUtils.sortByValue(allEdgesFrequencies);
         // 4. Start generating graphs using frequent edges and check their frequency
-        Deque<Triplet> frequentEdges = new ArrayDeque<>(allEdges.size());
-        for (Map.Entry<Triplet, Integer> edge: allEdges.entrySet())
+        Deque<Edge<V,E>> frequentEdges = new ArrayDeque<>(allEdgesFrequencies.size());
+        for (Map.Entry<Edge, Integer> edge: allEdgesFrequencies.entrySet())
             frequentEdges.add(edge.getKey());
-        AbstractBaseGraph emptyGraph = (AbstractBaseGraph) ((AbstractBaseGraph) graphDataset.get(0)).clone();
-        emptyGraph.removeAllVertices(emptyGraph.vertexSet());
-        result = new ArrayList(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
+        Graph<V,E> emptyGraph = new Graph<>(graphSet.get(0).IS_DIRECTED);
+        result = new ArrayList<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
         expandGraphs(emptyGraph, result, frequentEdges);
         miningDone = true;
         return result;
@@ -86,14 +85,14 @@ public class NaiveFSM implements FrequentSubgraphMining {
      * @param freqSubgraphs
      * @param candidateEdges 
      */
-    private void expandGraphs(AbstractBaseGraph base, List<Graph> freqSubgraphs, Deque<Triplet> candidateEdges) {
+    private void expandGraphs(Graph<V,E> base, List<Graph<V,E>> freqSubgraphs, Deque<Edge<V,E>> candidateEdges) {
         boolean isExpanded = false;
         for (int i = 0; i < candidateEdges.size(); ++i) {
-            AbstractBaseGraph expanded = (AbstractBaseGraph) base.clone();
-            Triplet edge = candidateEdges.remove();
-            expanded.addVertex(edge.getValue0());
-            expanded.addVertex(edge.getValue1());
-            expanded.addEdge(edge.getValue0(), edge.getValue1(), edge.getValue2());
+            Graph<V,E> expanded = new Graph<>(base);
+            Edge<V,E> edge = candidateEdges.remove();
+            expanded.addVertex(edge.source);
+            expanded.addVertex(edge.target);
+            expanded.addEdge(edge);
             if (countSupport(expanded) >= Math.round(MIN_SUP * graphDataset.size())) {
                 isExpanded = true;
                 expandGraphs(expanded, freqSubgraphs, candidateEdges);
@@ -104,14 +103,14 @@ public class NaiveFSM implements FrequentSubgraphMining {
     }
     
     /**
-     * 
-     * @param g
-     * @return 
+     * Return the support of the given graph in this dataset.
+     * The support of a graph is the number of graphs in the dataset 
+     * where g is its subgraph.
      */
     private int countSupport(Graph g) {
         int freq = 0;
         for (Graph base: graphDataset) {
-            if (GraphUtils.isSubgraph(base, g))
+            if (g.isSubgraphOf(base))
                 ++freq;
         }
         return freq;
@@ -119,7 +118,7 @@ public class NaiveFSM implements FrequentSubgraphMining {
     
 
     @Override
-    public List<Graph> getResult() {
+    public List<Graph<V, E>> getResult() {
         if (!miningDone)
             return null;
         return result;
