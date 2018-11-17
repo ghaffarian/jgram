@@ -1,13 +1,11 @@
 /*** In The Name of Allah ***/
 package jgram;
 
+import jgram.graphs.Edge;
 import java.io.IOException;
-import java.util.Arrays;
+import jgram.graphs.Graph;
 import jgram.io.GraphReader;
 import jgram.io.GraphWriter;
-import jgram.utils.GraphUtils;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultDirectedGraph;
 
 import static org.junit.Assert.*;
 import org.junit.*;
@@ -20,12 +18,12 @@ public class GraphReadWriteTest {
     
     @Test
     public void dotWriterTest() throws IOException {
-        DefaultDirectedGraph<Vertex,Edge> graph = new DefaultDirectedGraph<>(Edge.class);
+        Graph<String, String> graph = new Graph<>(true);
         // add vertices
-        Vertex  v1 = new Vertex("V1-test"),
-                v2 = new Vertex("V2-test"),
-                v3 = new Vertex("V3-test"),
-                v4 = new Vertex("V4-test");
+        String  v1 = "V1-test",
+                v2 = "V2-test",
+                v3 = "V3-test",
+                v4 = "V4-test";
         graph.addVertex(v1);
         graph.addVertex(v2);
         graph.addVertex(v3);
@@ -38,13 +36,13 @@ public class GraphReadWriteTest {
 //                e5 = "E5-test",
 //                e6 = "E6-test",
                 e7 = "E7-test";
-        graph.addEdge(v1, v2, new Edge(e1));
-        graph.addEdge(v1, v3, new Edge(e7));
-        graph.addEdge(v1, v4, new Edge(e1));
-        graph.addEdge(v2, v3, new Edge(e7));
-        graph.addEdge(v2, v4, new Edge(e1));
-        graph.addEdge(v3, v4, new Edge(e7));
-        graph.addEdge(v4, v1, new Edge(e7));
+        graph.addEdge(new Edge(v1, e1, v2));
+        graph.addEdge(new Edge(v1, e7, v3));
+        graph.addEdge(new Edge(v1, e1, v4));
+        graph.addEdge(new Edge(v2, e7, v3));
+        graph.addEdge(new Edge(v2, e1, v4));
+        graph.addEdge(new Edge(v3, e7, v4));
+        graph.addEdge(new Edge(v4, e7, v1));
         // write to file
         GraphWriter.writeDOT(graph, "write_test_1.dot");
         // assertion
@@ -54,43 +52,39 @@ public class GraphReadWriteTest {
     @Test
     public void dotReaderTest() throws IOException {
         // read graph from DOT file
-        Graph<Vertex,Edge> graph = GraphReader.readDOT("read_test_1.dot");
+        Graph<String,String> graph = GraphReader.readDOT("read_test_1.dot");
         // check directed/undirected property
-        assertTrue(graph.getType().isDirected());
+        assertTrue(graph.IS_DIRECTED);
         // vertices
-        Vertex<String>  v1 = new Vertex("V1-test"),
-                        v2 = new Vertex("V2-test"),
-                        v3 = new Vertex("V3-test"),
-                        v4 = new Vertex("V4-test");
-        Vertex[] vertices = {v1, v2, v3, v4};
+        String  v1 = "V1-test",
+                v2 = "V2-test",
+                v3 = "V3-test",
+                v4 = "V4-test";
+        String[] vertices = {v1, v2, v3, v4};
         // edges
-        Edge    e1 = new Edge("E1-test"),
+        String  e1 = "E1-test",
 //                e2 = "E2-test",
 //                e3 = "E3-test",
 //                e4 = "E4-test",
 //                e5 = "E5-test",
 //                e6 = "E6-test",
-                e7 = new Edge("E7-test");
-        Edge[] edges = {new Edge(e1), new Edge(e7)};
-        // check edge/vertex count
-        assertEquals(edges.length, graph.edgeSet().size());
-        assertEquals(vertices.length, graph.vertexSet().size());
+                e7 = "E7-test";
         // check edges
-        assertEquals(e1, graph.getEdge(v1, v2));
-        assertEquals(e7, graph.getEdge(v1, v3));
-        assertEquals(e1, graph.getEdge(v1, v4));
-        assertEquals(e7, graph.getEdge(v2, v3));
-        assertEquals(e1, graph.getEdge(v2, v4));
-        assertEquals(e7, graph.getEdge(v3, v4));
-        assertEquals(e7, graph.getEdge(v4, v1));
+        assertTrue(graph.containsEdge(new Edge(v1, e1, v2)));
+        assertTrue(graph.containsEdge(new Edge(v1, e7, v3)));
+        assertTrue(graph.containsEdge(new Edge(v1, e1, v4)));
+        assertTrue(graph.containsEdge(new Edge(v2, e7, v3)));
+        assertTrue(graph.containsEdge(new Edge(v2, e1, v4)));
+        assertTrue(graph.containsEdge(new Edge(v3, e7, v4)));
+        assertTrue(graph.containsEdge(new Edge(v4, e7, v1)));
     }
     
     @Test
     public void subGraphTest() throws IOException {
-        // read graph from DOT file
+        // read graphs from DOT file
         Graph<String,String> cfg = GraphReader.readDOT("CFG.dot");
         Graph<String,String> sub = GraphReader.readDOT("sub-CFG.dot");
         // assertion
-        assertTrue(GraphUtils.isSubgraph(cfg, sub));
+        assertTrue(sub.isSubgraphOf(cfg));
     }
 }
