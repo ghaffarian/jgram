@@ -4,9 +4,9 @@ package jgram.graphs;
 import java.util.Objects;
 
 /**
- * Edge is a simple holder for actual edge objects.
- * This is required to cope with the use of JGraphT 
- * of `java.util.Set` for both edges and vertices of graphs.
+ * Edge class for graphs.
+ * Contains references for source vertex and target vertex.
+ * This class can also contain a label of any type.
  * 
  * @author Seyed Mohammad Ghaffarian
  */

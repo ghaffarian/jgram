@@ -1,6 +1,8 @@
 /*** In The Name of Allah ***/
 package jgram.graphs;
 
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -17,10 +19,11 @@ public class Graph<V,E> {
     
     public final boolean IS_DIRECTED;
     
-    private Set<V> allVertices;
-    private Set<Edge<V,E>> allEdges;
-    private Map<V, Set<Edge<V,E>>> inEdges;
-    private Map<V, Set<Edge<V,E>>> outEdges;
+    // Change access modifiers to package private for efficient access by other package members.
+    /* package private */ Set<V> allVertices;
+    /* package private */ Set<Edge<V,E>> allEdges;
+    /* package private */ Map<V, Set<Edge<V,E>>> inEdges;
+    /* package private */ Map<V, Set<Edge<V,E>>> outEdges;
     
     /**
      * Construct a new empty Graph object with the given direction property.
@@ -156,11 +159,39 @@ public class Graph<V,E> {
     }
     
     /**
+     * Return the number of vertices in this graph.
+     */
+    public int vertexCount() {
+        return allVertices.size();
+    }
+    
+    /**
+     * Return the number of edges in this graph.
+     */
+    public int edgeCount() {
+        return allEdges.size();
+    }
+    
+    /**
+     * Return an enumeration over all edges of the graph.
+     */
+    public Enumeration<Edge<V,E>> enumerateAllEdges() {
+        return Collections.enumeration(allEdges);
+    }
+    
+    /**
+     * Return an enumeration over all vertices of the graph.
+     */
+    public Enumeration<V> enumerateAllVertices() {
+        return Collections.enumeration(allVertices);
+    }
+    
+    /**
      * Return a copy of the set of all edges in this graph.
      * This method has the overhead of creating of copy of the current set of edges.
      * Hence the returned collection is safe to use and modify (it is not linked to this graph).
      */
-    public Set<Edge<V,E>> getEdgeSet() {
+    public Set<Edge<V,E>> copyEdgeSet() {
         return new LinkedHashSet<>(allEdges);
     }
     
@@ -169,8 +200,22 @@ public class Graph<V,E> {
      * This method has the overhead of creating of copy of the current set of vertices.
      * Hence the returned collection is safe to use and modify (it is not linked to this graph).
      */
-    public Set<V> getVertexSet() {
+    public Set<V> copyVertexSet() {
         return new LinkedHashSet<>(allVertices);
+    }
+    
+    /**
+     * Return an enumeration over the set of incoming edges to the given vertex.
+     */
+    public Enumeration<Edge<V,E>> enumerateIncomingEdges(V v) {
+        return Collections.enumeration(inEdges.get(v));
+    }
+    
+    /**
+     * Return an enumeration over the set of outgoing edges from the given vertex.
+     */
+    public Enumeration<Edge<V,E>> enumerateOutgoingEdges(V v) {
+        return Collections.enumeration(outEdges.get(v));
     }
     
     /**
@@ -178,7 +223,7 @@ public class Graph<V,E> {
      * This method has the overhead of creating of copy of the current set of incoming edges.
      * Hence the returned collection is safe to use and modify (it is not linked to this graph).
      */
-    public Set<Edge<V,E>> getIncomingEdges(V v) {
+    public Set<Edge<V,E>> copyIncomingEdges(V v) {
         if (!allVertices.contains(v))
             throw new IllegalArgumentException("No such vertex in this graph!");
         return new LinkedHashSet<>(inEdges.get(v));
@@ -189,7 +234,7 @@ public class Graph<V,E> {
      * This method has the overhead of creating of copy of the current set of outgoing edges.
      * Hence the returned collection is safe to use and modify (it is not linked to this graph).
      */
-    public Set<Edge<V,E>> getOutgoingEdges(V v) {
+    public Set<Edge<V,E>> copyOutgoingEdges(V v) {
         if (!allVertices.contains(v))
             throw new IllegalArgumentException("No such vertex in this graph!");
         return new LinkedHashSet<>(outEdges.get(v));
@@ -237,6 +282,13 @@ public class Graph<V,E> {
      */
     public boolean containsVertex(V v) {
         return allVertices.contains(v);
+    }
+    
+    /**
+     * Check if this graph is a subgraph of the given base graph.
+     */
+    public boolean isSubgraphOf(Graph<V,E> base) {
+        return base.allVertices.containsAll(this.allVertices) && base.allEdges.containsAll(this.allEdges);
     }
     
     @Override
