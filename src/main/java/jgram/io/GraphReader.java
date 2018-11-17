@@ -2,9 +2,12 @@
 package jgram.io;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import jgram.graphs.Edge;
 import jgram.graphs.Graph;
@@ -15,6 +18,26 @@ import jgram.graphs.Graph;
  * @author Seyed Mohammad Ghaffarian
  */
 public class GraphReader {
+    
+    /**
+     * Reads the contents of a given directory and 
+     * 
+     * @param dirPath
+     * @return
+     */
+    public static List<Graph<String, String>> readDotDataset(String dirPath) throws IOException  {
+        File dir = new File(dirPath);
+        if (!dir.exists())
+            throw new IllegalArgumentException("Path not found!");
+        if (!dir.isDirectory()) 
+            throw new IllegalArgumentException("Path is not a directory!");
+        ArrayList<Graph<String, String>> graphDataset = new ArrayList<>(dir.list().length);
+        for (File file: dir.listFiles()) {
+            if (file.isFile() && file.getName().toLowerCase().endsWith(".dot"))
+                graphDataset.add(readDOT(file.getPath()));
+        }
+        return graphDataset;
+    }
     
     /**
      * Reads a DOT file and returns a single graph represented in the file.
