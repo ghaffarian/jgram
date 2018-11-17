@@ -13,3 +13,4 @@ buildNumber.properties
 
 # project output files
 *.dot
+graph-data/
