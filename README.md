@@ -10,9 +10,7 @@ Graph-Mining includes many techniques and sub-areas, where implementation of som
  - Graph Kernels
  - Graph Learning
 
-JGRAM is based on the [JGraphT](https://jgrapht.org) library for Java. 
 JGRAM is intended to fully support output formats of the [PROGEX tool](https://github.com/ghaffarian/progex), and can take graphs as input in several forms; including:
- - [Graph objects](https://jgrapht.org/javadoc/org/jgrapht/Graph.html) of JGraphT
  - [DOT](https://en.wikipedia.org/wiki/DOT_\(graph_description_language\)) files (output from PROGEX)
  - [JSON](https://en.wikipedia.org/wiki/JSON) files (output from PROGEX)
  - Graph Databases (e.g. [Neo4J](https://neo4j.com))
