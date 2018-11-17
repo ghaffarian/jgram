@@ -11,7 +11,8 @@ import static org.junit.Assert.*;
 import org.junit.*;
 
 /**
- *
+ * Testing read/write operations on graphs.
+ * 
  * @author Seyed Mohammad Ghaffarian
  */
 public class GraphReadWriteTest {
@@ -30,11 +31,11 @@ public class GraphReadWriteTest {
         graph.addVertex(v4);
         // add edges
         String  e1 = "E1-test",
-//                e2 = "E2-test",
-//                e3 = "E3-test",
-//                e4 = "E4-test",
-//                e5 = "E5-test",
-//                e6 = "E6-test",
+                //e2 = "E2-test",
+                //e3 = "E3-test",
+                //e4 = "E4-test",
+                //e5 = "E5-test",
+                //e6 = "E6-test",
                 e7 = "E7-test";
         graph.addEdge(new Edge(v1, e1, v2));
         graph.addEdge(new Edge(v1, e7, v3));
@@ -44,7 +45,7 @@ public class GraphReadWriteTest {
         graph.addEdge(new Edge(v3, e7, v4));
         graph.addEdge(new Edge(v4, e7, v1));
         // write to file
-        GraphWriter.writeDOT(graph, "write_test_1.dot");
+        GraphWriter.writeDOT(graph, "graph-data/write_test_1.dot");
         // assertion
         assertTrue(true);
     }
@@ -52,7 +53,7 @@ public class GraphReadWriteTest {
     @Test
     public void dotReaderTest() throws IOException {
         // read graph from DOT file
-        Graph<String,String> graph = GraphReader.readDOT("read_test_1.dot");
+        Graph<String,String> graph = GraphReader.readDOT("graph-data/read_test_1.dot");
         // check directed/undirected property
         assertTrue(graph.IS_DIRECTED);
         // vertices
@@ -60,14 +61,13 @@ public class GraphReadWriteTest {
                 v2 = "V2-test",
                 v3 = "V3-test",
                 v4 = "V4-test";
-        String[] vertices = {v1, v2, v3, v4};
         // edges
         String  e1 = "E1-test",
-//                e2 = "E2-test",
-//                e3 = "E3-test",
-//                e4 = "E4-test",
-//                e5 = "E5-test",
-//                e6 = "E6-test",
+                //e2 = "E2-test",
+                //e3 = "E3-test",
+                //e4 = "E4-test",
+                //e5 = "E5-test",
+                //e6 = "E6-test",
                 e7 = "E7-test";
         // check edges
         assertTrue(graph.containsEdge(new Edge(v1, e1, v2)));
@@ -82,9 +82,10 @@ public class GraphReadWriteTest {
     @Test
     public void subGraphTest() throws IOException {
         // read graphs from DOT file
-        Graph<String,String> cfg = GraphReader.readDOT("CFG.dot");
-        Graph<String,String> sub = GraphReader.readDOT("sub-CFG.dot");
+        Graph<String,String> cfg = GraphReader.readDOT("graph-data/CFG.dot");
+        Graph<String,String> sub = GraphReader.readDOT("graph-data/sub-CFG.dot");
         // assertion
         assertTrue(sub.isSubgraphOf(cfg));
+        assertFalse(cfg.isSubgraphOf(sub));
     }
 }
