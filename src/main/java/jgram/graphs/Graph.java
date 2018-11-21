@@ -1,13 +1,19 @@
 /*** In The Name of Allah ***/
 package jgram.graphs;
 
+import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import sun.security.provider.certpath.Vertex;
 
 /**
  * A generic class for labeled graphs.
@@ -288,16 +294,97 @@ public class Graph<V,E> {
      * Check if this graph is a subgraph of the given base graph.
      */
     public boolean isSubgraphOf(Graph<V,E> base) {
+        if (IS_DIRECTED != base.IS_DIRECTED)
+            return false;
         return base.allVertices.containsAll(this.allVertices) && base.allEdges.containsAll(this.allEdges);
+    }
+    
+    /**
+     * Check whether this graph is connected or not.
+     * Connectivity is determined by a breadth-first-traversal starting from one random vertex.
+     */
+    public boolean isConnected() {
+        //System.out.println(this);
+        Set<V> visited = new HashSet<>();
+        Deque<V> visiting = new ArrayDeque<>();
+        visiting.add(allVertices.iterator().next());
+        while (!visiting.isEmpty()) {
+            V next = visiting.remove();
+            visited.add(next);
+            //System.out.println("visiting " + next);
+            for (Edge<V,E> out: outEdges.get(next)) {
+                if (!visited.contains(out.source))
+                    visiting.add(out.source);
+                if (!visited.contains(out.target))
+                    visiting.add(out.target);
+            }
+            for (Edge<V,E> in: inEdges.get(next)) {
+                if (!visited.contains(in.source))
+                    visiting.add(in.source);
+                if (!visited.contains(in.target))
+                    visiting.add(in.target);
+            }
+        }
+        boolean isConnected = visited.size() == allVertices.size();
+        //System.out.println("is-connected = " + isConnected + "\n-------------------");
+        return isConnected;//visited.size() == allVertices.size();
+        // return visited.containsAll(allVertices);
     }
     
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
         for (V vrtx: allVertices) {
-            for (Edge<V,E> edge: outEdges.get(vrtx))
-                str.append(edge).append('\n');
+            if (outEdges.get(vrtx).isEmpty())
+                str.append(vrtx).append('\n');
+            else {
+                for (Edge<V,E> edge: outEdges.get(vrtx))
+                    str.append(edge).append('\n');
+            }
         }
         return str.toString();
     }
+    
+    public String toSingleLineString() {
+        StringBuilder str = new StringBuilder("{ ");
+        for (V vrtx: allVertices) {
+            str.append(vrtx).append(": [ ");
+            if (!outEdges.get(vrtx).isEmpty()) {
+                for (Edge<V,E> edge: outEdges.get(vrtx)) {
+                    if (edge.label == null)
+                        str.append("(->").append(edge.target).append(") ");
+                    else
+                        str.append("(").append(edge.label).append("->").append(edge.target).append(") ");
+                }
+            }
+            str.append("]; ");
+        }
+        str.append("}");
+        return str.toString();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (!(obj instanceof Graph))
+            return false;
+        Graph graph = (Graph) obj;
+        return  this.IS_DIRECTED == graph.IS_DIRECTED &&
+                this.vertexCount() == graph.vertexCount() && 
+                this.edgeCount() == graph.edgeCount() && 
+                this.isSubgraphOf(graph);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 71 * hash + (this.IS_DIRECTED ? 1 : 0);
+        for (V v: allVertices)
+            hash = 71 * hash + Objects.hashCode(v);
+        for (Edge<V,E> e: allEdges)
+            hash = 71 * hash + Objects.hashCode(e);
+        return hash;
+    }
+
 }
