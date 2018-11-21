@@ -7,8 +7,10 @@ import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import jgram.graphs.Edge;
 import jgram.graphs.Graph;
 import jgram.utils.CollectionUtils;
@@ -24,26 +26,46 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
     
     private final int AVRG_EDGE_PER_GRAPH = 16;
     private final int MIN_LIST_CAPACITY = 16;
+    
     private final float MIN_SUP;
+    private final boolean ONLY_MAXIMAL;
+    private final boolean ONLY_CONNECTED;
+    private final boolean ALLOW_SINGLE_EDGE;
     
     private boolean miningDone;
-    private List<Graph<V,E>> result;
+    private Set<Graph<V,E>> finalResult;
     private List<Graph<V,E>> graphDataset;
 
     /**
-     * Construct a new instance of greedy-frequent-subgraph-mining.
+     * Construct a new instance of naive frequent-subgraph-mining.
+     * Frequent single-edges are not considered as patterns.
+     * Only maximal frequent subgraphs are considered as patterns.
+     * Only connected frequent subgraphs are considered as patterns.
      * 
      * @param minSup  the minimum support ratio (0.0 .. 1.0) to consider a subgraph as frequent
      */
     public NaiveFSM(float minSup) {
-        result = null;
-        graphDataset = null;
+        this(minSup, true, false, true);
+    }
+
+    /**
+     * Construct a new instance of naive frequent-subgraph-mining.
+     * 
+     * @param minSup       the minimum support ratio (0.0 .. 1.0) to consider a subgraph as frequent
+     * @param maximal      specify if only maximal frequent patterns are desired
+     * @param singleEdges  specify whether single-edges should be considered as patterns or not
+     * @param connected    specify if only connected frequent patterns are desired
+     */
+    public NaiveFSM(float minSup, boolean maximal, boolean singleEdges, boolean connected) {
         MIN_SUP = minSup;
+        ONLY_MAXIMAL = maximal;
         miningDone = false;
+        ONLY_CONNECTED = connected;
+        ALLOW_SINGLE_EDGE = singleEdges;
     }
 
     @Override
-    public List<Graph<V, E>> mine(List<Graph<V, E>> graphSet) {
+    public Set<Graph<V, E>> mine(List<Graph<V, E>> graphSet) {
         this.graphDataset = graphSet;
         // 1. Calculate the frequency for all edges from all graphs
         Map<Edge, Integer> allEdgesFrequencies = new LinkedHashMap<>(graphDataset.size() * AVRG_EDGE_PER_GRAPH, 0.8f);
@@ -72,11 +94,43 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
         Deque<Edge<V,E>> frequentEdges = new ArrayDeque<>(allEdgesFrequencies.size());
         for (Map.Entry<Edge, Integer> edge: allEdgesFrequencies.entrySet())
             frequentEdges.add(edge.getKey());
-        Graph<V,E> emptyGraph = new Graph<>(graphSet.get(0).IS_DIRECTED);
-        result = new ArrayList<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
-        expandGraphs(emptyGraph, result, frequentEdges);
+        Graph<V,E> baseGraph;
+        List<Graph<V,E>> frequentPatterns = new ArrayList<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
+        //while (!frequentEdges.isEmpty()) {
+        for (Edge<V,E> edge: allEdgesFrequencies.keySet()) {
+            baseGraph = new Graph<>(graphSet.get(0).IS_DIRECTED);
+            //Edge<V,E> edge = frequentEdges.remove();
+            frequentEdges.remove(edge);
+            baseGraph.addVertex(edge.source);
+            baseGraph.addVertex(edge.target);
+            baseGraph.addEdge(edge);
+            expandGraphs(baseGraph, frequentPatterns, frequentEdges);
+            frequentEdges.add(edge); // add it back
+        }
+        System.out.println("# of frequent-patterns = " + frequentPatterns.size());
+        // 5. Remove non-maximal or un-connected patterns as desired
+        finalResult = new LinkedHashSet<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
+        for (Graph<V,E> graph: frequentPatterns) {
+            boolean isMaximal = true;
+            if (ONLY_MAXIMAL) {
+                for (Graph<V, E> g : frequentPatterns) {
+                    if (graph.equals(g))
+                        continue;
+                    if (graph.isSubgraphOf(g)) {
+                        isMaximal = false;
+                        break;
+                    }
+                }
+            }
+            if (isMaximal) {
+                // System.out.print("Pattern is maximal = ");
+                // printGraph(graph);
+                if (!ONLY_CONNECTED || graph.isConnected())
+                    finalResult.add(graph);
+            }
+        }
         miningDone = true;
-        return result;
+        return finalResult;
     }
     
     /**
@@ -85,21 +139,49 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
      * @param freqSubgraphs
      * @param candidateEdges 
      */
-    private void expandGraphs(Graph<V,E> base, List<Graph<V,E>> freqSubgraphs, Deque<Edge<V,E>> candidateEdges) {
-        boolean isExpanded = false;
-        for (int i = 0; i < candidateEdges.size(); ++i) {
-            Graph<V,E> expanded = new Graph<>(base);
-            Edge<V,E> edge = candidateEdges.remove();
-            expanded.addVertex(edge.source);
-            expanded.addVertex(edge.target);
-            expanded.addEdge(edge);
-            if (countSupport(expanded) >= Math.round(MIN_SUP * graphDataset.size())) {
-                isExpanded = true;
-                expandGraphs(expanded, freqSubgraphs, candidateEdges);
+    private boolean expandGraphs(Graph<V,E> base, List<Graph<V,E>> freqSubgraphs, Deque<Edge<V,E>> candidateEdges) {
+        boolean canBeMaximal = true;
+        //System.out.print("base = "); printGraph(base);
+        if (!candidateEdges.isEmpty()) {
+            Edge<V, E> edge = candidateEdges.remove();
+            // 1st, try to expand base graph including this edge
+            Graph<V,E> baseWas = new Graph<>(base);
+            base.addVertex(edge.source);
+            base.addVertex(edge.target);
+            base.addEdge(edge);
+            if (countSupport(base) >= Math.round(MIN_SUP * graphDataset.size())) {
+                canBeMaximal = false;
+                expandGraphs(base, freqSubgraphs, candidateEdges);
             }
+            // Remove the added edge from base
+            base.removeEdge(edge);
+            if (base.getInDegree(edge.source) + base.getOutDegree(edge.source) == 0)
+                base.removeVertex(edge.source);
+            if (base.getInDegree(edge.target) + base.getOutDegree(edge.target) == 0)
+                base.removeVertex(edge.target);
+            //
+            if (base.equals(baseWas)) {
+                System.out.println("BASE HAS CHANGED!");
+                System.out.print("BASE WAS = "); printGraph(baseWas);
+                System.out.print("BASE NOW = "); printGraph(base);
+            }
+            // 2nd, try to expand base graph excluding this edge
+            canBeMaximal &= expandGraphs(base, freqSubgraphs, candidateEdges);
+            // put back the removed edge exactly where it was
+            candidateEdges.push(edge);
         }
-        if (!isExpanded)
-            freqSubgraphs.add(base);
+        // if it can be maximal add it
+        if (canBeMaximal && (ALLOW_SINGLE_EDGE || base.edgeCount() > 1))
+            freqSubgraphs.add(new Graph<>(base));
+        return canBeMaximal;
+    }
+    
+    private void printGraph(Graph g) {
+        Enumeration edges = g.enumerateAllEdges();
+        System.out.print("{ ");
+        while (edges.hasMoreElements())
+            System.out.print(edges.nextElement() + " | ");
+        System.out.println("}");
     }
     
     /**
@@ -118,10 +200,10 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
     
 
     @Override
-    public List<Graph<V, E>> getResult() {
+    public Set<Graph<V, E>> getResult() {
         if (!miningDone)
             return null;
-        return result;
+        return finalResult;
     }
 
 }
