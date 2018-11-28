@@ -2,7 +2,7 @@
 package jgram.mining.frequent;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -94,94 +94,97 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
         Deque<Edge<V,E>> frequentEdges = new ArrayDeque<>(allEdgesFrequencies.size());
         for (Map.Entry<Edge, Integer> edge: allEdgesFrequencies.entrySet())
             frequentEdges.add(edge.getKey());
-        Graph<V,E> baseGraph;
-        List<Graph<V,E>> frequentPatterns = new ArrayList<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
-        //while (!frequentEdges.isEmpty()) {
-        for (Edge<V,E> edge: allEdgesFrequencies.keySet()) {
-            baseGraph = new Graph<>(graphSet.get(0).IS_DIRECTED);
-            //Edge<V,E> edge = frequentEdges.remove();
-            frequentEdges.remove(edge);
+        Set<Graph<V,E>> frequentPatterns = new LinkedHashSet<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
+        while (!frequentEdges.isEmpty()) {
+        //for (Edge<V,E> edge: allEdgesFrequencies.keySet()) {
+            Graph<V,E> baseGraph = new Graph<>(graphSet.get(0).IS_DIRECTED);
+            Edge<V,E> edge = frequentEdges.remove();
+            //frequentEdges.remove(edge);
             baseGraph.addVertex(edge.source);
             baseGraph.addVertex(edge.target);
             baseGraph.addEdge(edge);
             expandGraphs(baseGraph, frequentPatterns, frequentEdges);
-            frequentEdges.add(edge); // add it back
+            //frequentEdges.add(edge);
         }
-        System.out.println("# of frequent-patterns = " + frequentPatterns.size());
-        // 5. Remove non-maximal or un-connected patterns as desired
+        System.out.println("# of frequent patterns = " + frequentPatterns.size());
+        // 5. Remove duplicates, non-maximals or un-connected patterns as desired
+        //frequentPatterns = removeDuplicates(frequentPatterns);
+        //System.out.println("# of distinct patterns = " + frequentPatterns.size());
         finalResult = new LinkedHashSet<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
-        for (Graph<V,E> graph: frequentPatterns) {
+        Iterator<Graph<V,E>> iter = frequentPatterns.iterator();
+        while (iter.hasNext()) {
+            Graph<V,E> pattern = iter.next();
             boolean isMaximal = true;
             if (ONLY_MAXIMAL) {
-                for (Graph<V, E> g : frequentPatterns) {
-                    if (graph.equals(g))
-                        continue;
-                    if (graph.isSubgraphOf(g)) {
+                for (Graph<V, E> graph : frequentPatterns) {
+                    if (pattern.isProperSubgraphOf(graph)) {
                         isMaximal = false;
                         break;
                     }
                 }
             }
             if (isMaximal) {
-                // System.out.print("Pattern is maximal = ");
-                // printGraph(graph);
-                if (!ONLY_CONNECTED || graph.isConnected())
-                    finalResult.add(graph);
-            }
+                if ((!ONLY_CONNECTED) || pattern.isConnected())
+                    finalResult.add(pattern);
+            } else
+                iter.remove();
         }
         miningDone = true;
         return finalResult;
     }
     
     /**
-     * 
-     * @param base
-     * @param freqSubgraphs
-     * @param candidateEdges 
+     * Expand the given base graph using the set of candidate edges and calculate the support.
+     * If the calculated support is above the min threshold, add it to the set of frequents.
      */
-    private boolean expandGraphs(Graph<V,E> base, List<Graph<V,E>> freqSubgraphs, Deque<Edge<V,E>> candidateEdges) {
+    private boolean expandGraphs(Graph<V,E> base, Set<Graph<V,E>> freqSubgraphs, Deque<Edge<V,E>> candidateEdges) {
         boolean canBeMaximal = true;
-        //System.out.print("base = "); printGraph(base);
         if (!candidateEdges.isEmpty()) {
             Edge<V, E> edge = candidateEdges.remove();
             // 1st, try to expand base graph including this edge
-            Graph<V,E> baseWas = new Graph<>(base);
-            base.addVertex(edge.source);
-            base.addVertex(edge.target);
-            base.addEdge(edge);
-            if (countSupport(base) >= Math.round(MIN_SUP * graphDataset.size())) {
-                canBeMaximal = false;
-                expandGraphs(base, freqSubgraphs, candidateEdges);
-            }
-            // Remove the added edge from base
-            base.removeEdge(edge);
-            if (base.getInDegree(edge.source) + base.getOutDegree(edge.source) == 0)
-                base.removeVertex(edge.source);
-            if (base.getInDegree(edge.target) + base.getOutDegree(edge.target) == 0)
-                base.removeVertex(edge.target);
-            //
-            if (base.equals(baseWas)) {
-                System.out.println("BASE HAS CHANGED!");
-                System.out.print("BASE WAS = "); printGraph(baseWas);
-                System.out.print("BASE NOW = "); printGraph(base);
+            if (!ONLY_CONNECTED || base.containsVertex(edge.source) || base.containsVertex(edge.target)) {
+                base.addVertex(edge.source);
+                base.addVertex(edge.target);
+                base.addEdge(edge);
+                if (countSupport(base) >= Math.round(MIN_SUP * graphDataset.size())) {
+                    canBeMaximal = false;
+                    expandGraphs(base, freqSubgraphs, candidateEdges);
+                }
+                // Remove the added edge from base
+                base.removeEdge(edge);
+                if (base.getInDegree(edge.source) + base.getOutDegree(edge.source) == 0)
+                    base.removeVertex(edge.source);
+                if (base.getInDegree(edge.target) + base.getOutDegree(edge.target) == 0)
+                    base.removeVertex(edge.target);
             }
             // 2nd, try to expand base graph excluding this edge
             canBeMaximal &= expandGraphs(base, freqSubgraphs, candidateEdges);
             // put back the removed edge exactly where it was
             candidateEdges.push(edge);
         }
-        // if it can be maximal add it
+        // if it can be maximal add a copy of it
         if (canBeMaximal && (ALLOW_SINGLE_EDGE || base.edgeCount() > 1))
             freqSubgraphs.add(new Graph<>(base));
         return canBeMaximal;
     }
     
-    private void printGraph(Graph g) {
-        Enumeration edges = g.enumerateAllEdges();
-        System.out.print("{ ");
-        while (edges.hasMoreElements())
-            System.out.print(edges.nextElement() + " | ");
-        System.out.println("}");
+    /**
+     * Remove duplicate graphs from the given collection and return a Set of unique graphs. 
+     */
+    private Set<Graph<V,E>> removeDuplicates(Collection<Graph<V,E>> collection) {
+        Set<Graph<V,E>> result = new LinkedHashSet<>();
+        for (Graph<V,E> graph: collection) {
+            boolean unique = true;
+            for (Graph<V,E> added: result) {
+                if (added.equals(graph)) {
+                    unique = false;
+                    break;
+                }
+            }
+            if (unique)
+                result.add(graph);
+        }
+        return result;
     }
     
     /**
