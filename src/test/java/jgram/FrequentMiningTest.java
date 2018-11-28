@@ -3,8 +3,6 @@ package jgram;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import jgram.graphs.Graph;
@@ -60,7 +58,7 @@ public class FrequentMiningTest {
             GraphWriter.writeDOT(pattern, String.format("graph-data/out/patterns-1/pattern_%d.dot", cnt));
             ++cnt;
         }
-        //assertTrue(patterns.size() >= 4);
+        assertTrue(patterns.size() >= 4);
         //
         graphDataset = GraphReader.readDotDataset("graph-data/set-2/");
         fsm = new NaiveFSM<>(0.10f);
