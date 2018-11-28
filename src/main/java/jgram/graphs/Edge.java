@@ -32,16 +32,16 @@ public class Edge<V,E> {
     
     @Override
     public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
         if (obj == null)
             return false;
-        if (!(obj instanceof Edge))
+        if (getClass() != obj.getClass())
             return false;
-        //
-        Edge edge = (Edge) obj;
-        if (this.label == null)
-            return edge.label == null && this.source.equals(edge.source) && this.target.equals(edge.target);
-        else
-            return this.source.equals(edge.source) && this.label.equals(edge.label) && this.target.equals(edge.target);
+        final Edge<V,E> other = (Edge<V,E>) obj;
+        return  Objects.equals(this.label, other.label) && 
+                Objects.equals(this.source, other.source) &&
+                Objects.equals(this.target, other.target);
     }
 
     @Override
