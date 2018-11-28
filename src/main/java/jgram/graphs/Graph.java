@@ -5,7 +5,6 @@ import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -13,7 +12,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import sun.security.provider.certpath.Vertex;
 
 /**
  * A generic class for labeled graphs.
@@ -50,12 +48,19 @@ public class Graph<V,E> {
      * 
      * @param graph the Graph object to be copied
      */
-    public Graph(Graph graph) {
+    public Graph(Graph<V,E> graph) {
         IS_DIRECTED = graph.IS_DIRECTED;
-        inEdges = new LinkedHashMap<>(graph.inEdges);
-        outEdges = new LinkedHashMap<>(graph.outEdges);
+        // copy all vertices and edges
         allEdges = new LinkedHashSet<>(graph.allEdges);
         allVertices = new LinkedHashSet<>(graph.allVertices);
+        // copy incoming-edges map
+        inEdges = new LinkedHashMap<>();
+        for (V v: graph.inEdges.keySet())
+            inEdges.put(v, new LinkedHashSet<>(graph.inEdges.get(v)));
+        // copy outgoing-edges map
+        outEdges = new LinkedHashMap<>();
+        for (V v: graph.outEdges.keySet())
+            outEdges.put(v, new LinkedHashSet<>(graph.outEdges.get(v)));
     }
     
     /**
@@ -270,7 +275,7 @@ public class Graph<V,E> {
     public Set<Edge<V,E>> getEdgesWithLabel(E label) {
         Set<Edge<V,E>> edges = new LinkedHashSet<>();
         for (Edge e: allEdges) {
-            if (e.label.equals(label))
+            if (label.equals(e.label))
                 edges.add(e);
         }
         return edges;
@@ -296,38 +301,43 @@ public class Graph<V,E> {
     public boolean isSubgraphOf(Graph<V,E> base) {
         if (IS_DIRECTED != base.IS_DIRECTED)
             return false;
+        if (this.allVertices.size() > base.allVertices.size() || this.allEdges.size() > base.allEdges.size())
+            return false;
         return base.allVertices.containsAll(this.allVertices) && base.allEdges.containsAll(this.allEdges);
     }
     
     /**
+     * Check if this graph is a proper subgraph of the given base graph.
+     * A proper subgraph is a subgraph which is not equal to the base graph.
+     * A proper subgraph lacks at least on vertex or edge compared to the base.
+     */
+    public boolean isProperSubgraphOf(Graph<V,E> base) {
+        if (this.allVertices.size() == base.allVertices.size() || this.allEdges.size() == base.allEdges.size())
+            return false;
+        return isSubgraphOf(base);
+    }
+    
+    /**
      * Check whether this graph is connected or not.
-     * Connectivity is determined by a breadth-first-traversal starting from one random vertex.
+     * Connectivity is determined by a breadth-first-traversal starting from a random vertex.
      */
     public boolean isConnected() {
-        //System.out.println(this);
         Set<V> visited = new HashSet<>();
         Deque<V> visiting = new ArrayDeque<>();
         visiting.add(allVertices.iterator().next());
         while (!visiting.isEmpty()) {
             V next = visiting.remove();
             visited.add(next);
-            //System.out.println("visiting " + next);
             for (Edge<V,E> out: outEdges.get(next)) {
-                if (!visited.contains(out.source))
-                    visiting.add(out.source);
                 if (!visited.contains(out.target))
                     visiting.add(out.target);
             }
             for (Edge<V,E> in: inEdges.get(next)) {
                 if (!visited.contains(in.source))
                     visiting.add(in.source);
-                if (!visited.contains(in.target))
-                    visiting.add(in.target);
             }
         }
-        boolean isConnected = visited.size() == allVertices.size();
-        //System.out.println("is-connected = " + isConnected + "\n-------------------");
-        return isConnected;//visited.size() == allVertices.size();
+        return visited.size() == allVertices.size();
         // return visited.containsAll(allVertices);
     }
     
@@ -335,11 +345,12 @@ public class Graph<V,E> {
     public String toString() {
         StringBuilder str = new StringBuilder();
         for (V vrtx: allVertices) {
-            if (outEdges.get(vrtx).isEmpty())
-                str.append(vrtx).append('\n');
-            else {
-                for (Edge<V,E> edge: outEdges.get(vrtx))
-                    str.append(edge).append('\n');
+            str.append(vrtx).append(":\n");
+            for (Edge<V,E> edge: outEdges.get(vrtx)) {
+                if (edge.label == null)
+                    str.append("  --> ").append(edge.target).append("\n");
+                else
+                    str.append("  --(").append(edge.label).append(")--> ").append(edge.target).append("\n");
             }
         }
         return str.toString();
@@ -365,15 +376,18 @@ public class Graph<V,E> {
     
     @Override
     public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
         if (obj == null)
             return false;
-        if (!(obj instanceof Graph))
+        if (getClass() != obj.getClass())
             return false;
-        Graph graph = (Graph) obj;
-        return  this.IS_DIRECTED == graph.IS_DIRECTED &&
-                this.vertexCount() == graph.vertexCount() && 
-                this.edgeCount() == graph.edgeCount() && 
-                this.isSubgraphOf(graph);
+        final Graph<V,E> other = (Graph<V,E>) obj;
+        return  this.IS_DIRECTED == other.IS_DIRECTED &&
+                this.vertexCount() == other.vertexCount() && 
+                this.edgeCount() == other.edgeCount() && 
+                this.allVertices.containsAll(other.allVertices) &&
+                this.allEdges.containsAll(other.allEdges);
     }
 
     @Override
