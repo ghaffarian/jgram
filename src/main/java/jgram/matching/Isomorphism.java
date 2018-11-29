@@ -3,6 +3,7 @@ package jgram.matching;
 
 import java.util.HashMap;
 import java.util.Map;
+import jgram.graphs.Edge;
 
 /**
  * Isomorphism of two graphs.
@@ -30,7 +31,7 @@ public class Isomorphism<V,E> extends Matching<V,E> {
      * @param isomorphic  the isomorphism status
      */
     public Isomorphism(boolean isomorphic) {
-        this(isomorphic, new HashMap<V,V>(), new HashMap<E,E>());
+        this(isomorphic, new HashMap<V,V>(), new HashMap<Edge<V,E>,Edge<V,E>>());
     }
     
     /**
@@ -41,9 +42,9 @@ public class Isomorphism<V,E> extends Matching<V,E> {
      * @param nodeMappings  the correspondence of nodes from one graph to nodes of the other graph
      * @param edgeMappings  the correspondence of edges from one graph to edges of the other graph
      */
-    public Isomorphism(boolean isomorphic, Map<V,V> nodeMappings, Map<E,E> edgeMappings) {
-        this.score = isomorphic ? 1 : 0;
-        nodeCorrespondence = nodeMappings;
+    public Isomorphism(boolean isomorphic, Map<V,V> nodeMappings, Map<Edge<V,E>,Edge<V,E>> edgeMappings) {
+        this.score = isomorphic ? 1.0f : 0.0f;
+        vertexCorrespondence = nodeMappings;
         edgeCorrespondence = edgeMappings;
     }
     
@@ -55,7 +56,7 @@ public class Isomorphism<V,E> extends Matching<V,E> {
      * @return  true if the matching score is 1, otherwise false.
      */
     public boolean isIsomorphic() {
-        return score == 1;
+        return Math.abs(score - 1.0f) < 0.1f;
     }
 
 }
