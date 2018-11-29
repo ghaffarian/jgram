@@ -16,11 +16,11 @@ import java.util.Map;
  */
 public class Matching<V,E> {
     
-    protected int score;
+    /* package private */ int score;
     
-    protected Map<V,V> nodeCorrespondence;
+    /* package private */ Map<V,V> nodeCorrespondence;
     
-    protected Map<E,E> edgeCorrespondence;
+    /* package private */ Map<E,E> edgeCorrespondence;
     
     /**
      * Creates a new Matching object, 
