@@ -15,16 +15,6 @@ import org.jgrapht.Graph;
 public interface MatchingAlgorithm {
     
     /**
-     * Initialization of the algorithm.
-     * This method is optional.
-     * 
-     * @param params  any parameters required for initializing the algorithm
-     */
-    default void init(Object... params) {
-        ; // NOP!
-    }
-    
-    /**
      * Perform the matching between two given graphs.
      * The result of this operation is a score and 
      * correspondence mapping of nodes and edges of the two graphs.
