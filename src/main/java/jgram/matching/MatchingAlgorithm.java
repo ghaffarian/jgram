@@ -1,7 +1,7 @@
 /*** In The Name of Allah ***/
 package jgram.matching;
 
-import org.jgrapht.Graph;
+import jgram.graphs.Graph;
 
 /**
  * Interface of graph matching algorithms.
@@ -12,7 +12,7 @@ import org.jgrapht.Graph;
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public interface MatchingAlgorithm {
+public interface MatchingAlgorithm<V,E> {
     
     /**
      * Perform the matching between two given graphs.
@@ -23,7 +23,7 @@ public interface MatchingAlgorithm {
      * @param g2  the second given graph
      * @return    the result of matching between g1 and g2
      */
-    public Matching match(Graph g1, Graph g2);
+    public Matching<V,E> match(Graph<V,E> g1, Graph<V,E> g2);
     
     /**
      * Fetch result of the matching algorithm.
@@ -31,6 +31,6 @@ public interface MatchingAlgorithm {
      * @return  returns the result of the match(...) method (without running it again);
      *          or null if the match(...) method has not completed
      */
-    public Matching getResult();
+    public Matching<V,E> getResult();
     
 }
