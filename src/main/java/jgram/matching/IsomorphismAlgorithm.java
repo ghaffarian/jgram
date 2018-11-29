@@ -1,7 +1,7 @@
 /*** In The Name of Allah ***/
 package jgram.matching;
 
-import org.jgrapht.Graph;
+import jgram.graphs.Graph;
 
 /**
  * Interface of graph isomorphism algorithms.
