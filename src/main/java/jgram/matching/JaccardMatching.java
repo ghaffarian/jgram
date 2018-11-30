@@ -26,6 +26,7 @@ public class JaccardMatching<V,E> implements MatchingAlgorithm<V,E> {
     }
     
     public final Type TYPE;
+    public final boolean SUBGRAPH_MATCHING;
     
     private Matching<V,E> matchingResult;
     
@@ -34,16 +35,39 @@ public class JaccardMatching<V,E> implements MatchingAlgorithm<V,E> {
      * This instance uses graph edges as the basis for matching.
      */
     public JaccardMatching() {
-        this(Type.EDGE_MATCHING);
+        this(false, Type.EDGE_MATCHING);
     }
     
     /**
      * Constructs a new instance of Jaccard matching algorithm.
-     * This matching type is determined via the given parameter.
+     * The matching type is determined via the given parameter.
      */
     public JaccardMatching(Type type) {
+        this(false, type);
+    }
+    
+    /**
+     * Constructs a new instance of Jaccard matching algorithm.
+     * This instance uses graph edges as the basis for matching.
+     * If the input parameter is true, then subgraph matching is performed
+     * instead of whole graph matching; that is, instead of intersection over union,
+     * intersection over the size of the smaller graph is calculated as the similarity index.
+     */
+    public JaccardMatching(boolean subgraphMatching) {
+        this(subgraphMatching, Type.EDGE_MATCHING);
+    }
+    
+    /**
+     * Constructs a new instance of Jaccard matching algorithm.
+     * The matching type is determined via the given parameter.
+     * If the input parameter is true, then subgraph matching is performed
+     * instead of whole graph matching; that is, instead of intersection over union,
+     * intersection over the size of the smaller graph is calculated as the similarity index.
+     */
+    public JaccardMatching(boolean subgraphMatching, Type type) {
         TYPE = type;
         matchingResult = null;
+        SUBGRAPH_MATCHING = subgraphMatching;
     }
 
     @Override
@@ -72,7 +96,10 @@ public class JaccardMatching<V,E> implements MatchingAlgorithm<V,E> {
                     edgeMapping.put(edge, matchingEdge);
                 }
             }
-            union = smallGraph.edgeCount() + largGraph.edgeCount() - intersect;
+            if (SUBGRAPH_MATCHING)
+                union = smallGraph.edgeCount();
+            else
+                union = smallGraph.edgeCount() + largGraph.edgeCount() - intersect;
         } else {
             // Jaccard matching on verteices
             if (g1.vertexCount() < g2.vertexCount()) {
@@ -90,7 +117,10 @@ public class JaccardMatching<V,E> implements MatchingAlgorithm<V,E> {
                     vertexMapping.put(vertex, findMatchingVertex(largGraph, vertex));
                 }
             }
-            union = smallGraph.vertexCount() + largGraph.vertexCount() - intersect;
+            if (SUBGRAPH_MATCHING)
+                union = smallGraph.vertexCount();
+            else
+                union = smallGraph.vertexCount() + largGraph.vertexCount() - intersect;
         }
         float score = ((float) intersect) / union;
         matchingResult = new Matching<>(score, vertexMapping, edgeMapping);
