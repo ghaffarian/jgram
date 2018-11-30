@@ -10,8 +10,16 @@ import jgram.graphs.Graph;
 /**
  * An inexact graph matching (similarity) algorithm based on the Jaccard-index for set similarity.
  * The Jaccard matching on graphs can be performed either based on edges or vertices.
- * When edge matching is done, each graph is considered a set of edges.
- * When vertex matching is done, each graph is considered a set of vertices.
+ * When edge similarity is done, each graph is considered a set of edges.
+ * When vertex similarity is done, each graph is considered a set of vertices.
+ * 
+ * Another type of Jaccard matching is subgraph-matching.
+ * Subgraph-matching differs from similarity such that similarity tries to compute 
+ * the overall similarity score of two graphs; where as subgraph matching computes
+ * the matching score of the smaller graph with a subgraph of the larger graph.
+ * 
+ * More precisely, graph similarity computes intersection over union, where as
+ * subgraph-matching computes intersection over size of the smaller graph.
  * 
  * @author Seyed Mohammad Ghaffarian
  */
@@ -19,23 +27,35 @@ public class JaccardMatching<V,E> implements MatchingAlgorithm<V,E> {
 
     /**
      * Enumeration of different Jaccard matching types.
+     * The matching is either edge-based or vertex-based.
+     * Moreover, the matching is either graph similarity (overall similarity of two graphs),
+     * or subgraph-matching which matches the smaller graph with a subgraph of the larger graph.
      */
     public enum Type {
-        EDGE_MATCHING,
-        VERTEX_MATCHING
+        EDGE_SIMILARITY (true, true),
+        VERTEX_SIMILARITY (false, true),
+        EDGE_SUBGRAPH_MATCHING (true, false),
+        VERTEX_SUBGRAPH_MATCHING (false, false);
+        
+        final boolean isEdgeBased;
+        final boolean isSimilarity;
+        
+        private Type(boolean edgeBased, boolean similarity) {
+            isEdgeBased = edgeBased;
+            isSimilarity = similarity;
+        }
     }
     
     public final Type TYPE;
-    public final boolean SUBGRAPH_MATCHING;
     
     private Matching<V,E> matchingResult;
     
     /**
      * Constructs a new instance of Jaccard matching algorithm.
-     * This instance uses graph edges as the basis for matching.
+     * The matching type is edges-based similarity (JaccardMatching.Type.EDGE_SIMILARITY).
      */
     public JaccardMatching() {
-        this(false, Type.EDGE_MATCHING);
+        this(Type.EDGE_SIMILARITY);
     }
     
     /**
@@ -43,41 +63,18 @@ public class JaccardMatching<V,E> implements MatchingAlgorithm<V,E> {
      * The matching type is determined via the given parameter.
      */
     public JaccardMatching(Type type) {
-        this(false, type);
-    }
-    
-    /**
-     * Constructs a new instance of Jaccard matching algorithm.
-     * This instance uses graph edges as the basis for matching.
-     * If the input parameter is true, then subgraph matching is performed
-     * instead of whole graph matching; that is, instead of intersection over union,
-     * intersection over the size of the smaller graph is calculated as the similarity index.
-     */
-    public JaccardMatching(boolean subgraphMatching) {
-        this(subgraphMatching, Type.EDGE_MATCHING);
-    }
-    
-    /**
-     * Constructs a new instance of Jaccard matching algorithm.
-     * The matching type is determined via the given parameter.
-     * If the input parameter is true, then subgraph matching is performed
-     * instead of whole graph matching; that is, instead of intersection over union,
-     * intersection over the size of the smaller graph is calculated as the similarity index.
-     */
-    public JaccardMatching(boolean subgraphMatching, Type type) {
         TYPE = type;
         matchingResult = null;
-        SUBGRAPH_MATCHING = subgraphMatching;
     }
-
+    
     @Override
     public Matching match(Graph<V,E> g1, Graph<V,E> g2) {
         int intersect = 0, union;
         Map<V,V> vertexMapping = new LinkedHashMap<>();
         Map<Edge<V,E>,Edge<V,E>> edgeMapping = new LinkedHashMap<>();
         Graph<V,E> smallGraph, largGraph;
-        if (TYPE.equals(Type.EDGE_MATCHING)) {
-            // Jaccard matching on edges
+        if (TYPE.isEdgeBased) {
+            // Edge based Jaccard matching
             if (g1.edgeCount() < g2.edgeCount()) {
                 smallGraph = g1;
                 largGraph = g2;
@@ -96,12 +93,12 @@ public class JaccardMatching<V,E> implements MatchingAlgorithm<V,E> {
                     edgeMapping.put(edge, matchingEdge);
                 }
             }
-            if (SUBGRAPH_MATCHING)
-                union = smallGraph.edgeCount();
-            else
+            if (TYPE.isSimilarity)
                 union = smallGraph.edgeCount() + largGraph.edgeCount() - intersect;
+            else 
+                union = smallGraph.edgeCount();
         } else {
-            // Jaccard matching on verteices
+            // Vertex based Jaccard matching
             if (g1.vertexCount() < g2.vertexCount()) {
                 smallGraph = g1;
                 largGraph = g2;
@@ -117,10 +114,10 @@ public class JaccardMatching<V,E> implements MatchingAlgorithm<V,E> {
                     vertexMapping.put(vertex, findMatchingVertex(largGraph, vertex));
                 }
             }
-            if (SUBGRAPH_MATCHING)
-                union = smallGraph.vertexCount();
-            else
+            if (TYPE.isSimilarity)
                 union = smallGraph.vertexCount() + largGraph.vertexCount() - intersect;
+            else
+                union = smallGraph.vertexCount();
         }
         float score = ((float) intersect) / union;
         matchingResult = new Matching<>(score, vertexMapping, edgeMapping);
