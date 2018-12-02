@@ -23,11 +23,10 @@ public class Graph<V,E> {
     
     public final boolean IS_DIRECTED;
     
-    // Change access modifiers to package private for efficient access by other package members.
-    /* package private */ Set<V> allVertices;
-    /* package private */ Set<Edge<V,E>> allEdges;
-    /* package private */ Map<V, Set<Edge<V,E>>> inEdges;
-    /* package private */ Map<V, Set<Edge<V,E>>> outEdges;
+    protected Set<V> allVertices;
+    protected Set<Edge<V,E>> allEdges;
+    protected Map<V, Set<Edge<V,E>>> inEdges;
+    protected Map<V, Set<Edge<V,E>>> outEdges;
     
     /**
      * Construct a new empty Graph object with the given direction property.
