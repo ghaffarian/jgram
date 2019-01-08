@@ -1,7 +1,7 @@
 /*** In The Name of Allah ***/
-package jgram.matching;
+package ghaffarian.jgram.matching;
 
-import jgram.graphs.Graph;
+import ghaffarian.graphs.Graph;
 
 /**
  * Interface of graph isomorphism algorithms.

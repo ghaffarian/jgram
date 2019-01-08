@@ -1,9 +1,9 @@
 /*** In The Name of Allah ***/
-package jgram.matching;
+package ghaffarian.jgram.matching;
 
 import java.util.HashMap;
 import java.util.Map;
-import jgram.graphs.Edge;
+import ghaffarian.graphs.Edge;
 
 /**
  * Isomorphism of two graphs.

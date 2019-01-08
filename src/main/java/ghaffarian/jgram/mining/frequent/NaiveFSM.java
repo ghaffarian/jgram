@@ -1,6 +1,7 @@
 /*** In The Name of Allah ***/
-package jgram.mining.frequent;
+package ghaffarian.jgram.mining.frequent;
 
+import ghaffarian.graphs.*;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
@@ -11,8 +12,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import jgram.graphs.Edge;
-import jgram.graphs.Graph;
 import jgram.utils.CollectionUtils;
 
 /**

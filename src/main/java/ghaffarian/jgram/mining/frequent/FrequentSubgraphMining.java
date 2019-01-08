@@ -1,9 +1,9 @@
 /*** In The Name of Allah ***/
-package jgram.mining.frequent;
+package ghaffarian.jgram.mining.frequent;
 
 import java.util.List;
 import java.util.Set;
-import jgram.graphs.Graph;
+import ghaffarian.graphs.Graph;
 
 /**
  * General interface for frequent subgraph mining algorithms.

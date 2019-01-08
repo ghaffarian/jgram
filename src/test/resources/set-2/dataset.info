@@ -1,0 +1,26 @@
+
+OUTPUT_DIR ...... = graph-dataset/
+MIN_SUPPORT ..... = 0.10
+DATASET_LEN ..... = 40
+FREQUENTS_LEN ... = 4
+EDGE_LABELS_LEN . = 2
+VERTEX_LABELS_LEN = 8
+AVRG_GRAPH_SIZE . = 9
+AVRG_FRQNT_SIZE . = 4
+IS_DIRECTED ..... = True
+ALLOW_LOOPS ..... = False 
+
+Pattern-#1 with 3 edges and support of 19.0%
+inserted in 8 graphs : [1, 11, 15, 20, 24, 31, 32, 37] 
+
+Pattern-#2 with 4 edges and support of 19.7%
+inserted in 8 graphs : [2, 3, 4, 12, 15, 31, 32, 35] 
+
+Pattern-#3 with 4 edges and support of 10.7%
+inserted in 4 graphs : [4, 6, 34, 40] 
+
+Pattern-#4 with 5 edges and support of 12.1%
+inserted in 5 graphs : [4, 10, 11, 32, 40] 
+
+The following 17 graphs include at least one pattern:
+[1, 2, 3, 4, 6, 10, 11, 12, 15, 20, 24, 31, 32, 34, 35, 37, 40] 

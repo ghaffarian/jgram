@@ -1,11 +1,11 @@
 /*** In The Name of Allah ***/
-package jgram.matching;
+package ghaffarian.jgram.matching;
 
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import jgram.graphs.Edge;
-import jgram.graphs.Graph;
+import ghaffarian.graphs.Edge;
+import ghaffarian.graphs.Graph;
 
 /**
  * An inexact graph matching (similarity) algorithm based on the Jaccard-index for set similarity.
