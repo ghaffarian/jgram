@@ -93,10 +93,10 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
         Deque<Edge<V,E>> frequentEdges = new ArrayDeque<>(allEdgesFrequencies.size());
         for (Map.Entry<Edge, Integer> edge: allEdgesFrequencies.entrySet())
             frequentEdges.add(edge.getKey());
-        Set<Graph<V,E>> frequentPatterns = new LinkedHashSet<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
+        Set<Digraph<V,E>> frequentPatterns = new LinkedHashSet<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
         while (!frequentEdges.isEmpty()) {
         //for (Edge<V,E> edge: allEdgesFrequencies.keySet()) {
-            Graph<V,E> baseGraph = new Graph<>(graphSet.get(0).IS_DIRECTED);
+            Digraph<V,E> baseGraph = new Digraph<>();
             Edge<V,E> edge = frequentEdges.remove();
             //frequentEdges.remove(edge);
             baseGraph.addVertex(edge.source);
@@ -110,12 +110,12 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
         //frequentPatterns = removeDuplicates(frequentPatterns);
         //System.out.println("# of distinct patterns = " + frequentPatterns.size());
         finalResult = new LinkedHashSet<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
-        Iterator<Graph<V,E>> iter = frequentPatterns.iterator();
+        Iterator<Digraph<V,E>> iter = frequentPatterns.iterator();
         while (iter.hasNext()) {
-            Graph<V,E> pattern = iter.next();
+            Digraph<V,E> pattern = iter.next();
             boolean isMaximal = true;
             if (ONLY_MAXIMAL) {
-                for (Graph<V, E> graph : frequentPatterns) {
+                for (Digraph<V, E> graph : frequentPatterns) {
                     if (pattern.isProperSubgraphOf(graph)) {
                         isMaximal = false;
                         break;
@@ -136,7 +136,7 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
      * Expand the given base graph using the set of candidate edges and calculate the support.
      * If the calculated support is above the min threshold, add it to the set of frequents.
      */
-    private boolean expandGraphs(Graph<V,E> base, Set<Graph<V,E>> freqSubgraphs, Deque<Edge<V,E>> candidateEdges) {
+    private boolean expandGraphs(Digraph<V,E> base, Set<Digraph<V,E>> freqSubgraphs, Deque<Edge<V,E>> candidateEdges) {
         boolean canBeMaximal = true;
         if (!candidateEdges.isEmpty()) {
             Edge<V, E> edge = candidateEdges.remove();
@@ -163,18 +163,18 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
         }
         // if it can be maximal add a copy of it
         if (canBeMaximal && (ALLOW_SINGLE_EDGE || base.edgeCount() > 1))
-            freqSubgraphs.add(new Graph<>(base));
+            freqSubgraphs.add(new Digraph<>(base));
         return canBeMaximal;
     }
     
     /**
      * Remove duplicate graphs from the given collection and return a Set of unique graphs. 
      */
-    private Set<Graph<V,E>> removeDuplicates(Collection<Graph<V,E>> collection) {
-        Set<Graph<V,E>> result = new LinkedHashSet<>();
-        for (Graph<V,E> graph: collection) {
+    private Set<Digraph<V,E>> removeDuplicates(Collection<Digraph<V,E>> collection) {
+        Set<Digraph<V,E>> result = new LinkedHashSet<>();
+        for (Digraph<V,E> graph: collection) {
             boolean unique = true;
-            for (Graph<V,E> added: result) {
+            for (Digraph<V,E> added: result) {
                 if (added.equals(graph)) {
                     unique = false;
                     break;
@@ -191,7 +191,7 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
      * The support of a graph is the number of graphs in the dataset 
      * where g is its subgraph.
      */
-    private int countSupport(Graph g) {
+    private int countSupport(Digraph g) {
         int freq = 0;
         for (Graph base: graphDataset) {
             if (g.isSubgraphOf(base))

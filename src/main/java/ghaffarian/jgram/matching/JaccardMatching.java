@@ -72,7 +72,8 @@ public class JaccardMatching<V,E> implements MatchingAlgorithm<V,E> {
         int intersect = 0, union;
         Map<V,V> vertexMapping = new LinkedHashMap<>();
         Map<Edge<V,E>,Edge<V,E>> edgeMapping = new LinkedHashMap<>();
-        Graph<V,E> smallGraph, largGraph;
+        Graph<V, E> smallGraph;
+        Graph<V,E> largGraph;
         if (TYPE.isEdgeBased) {
             // Edge based Jaccard matching
             if (g1.edgeCount() < g2.edgeCount()) {
