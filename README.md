@@ -11,8 +11,8 @@ Graph-Mining includes many techniques and sub-areas, where implementation of som
  - Graph Learning
 
 JGRAM is based on the [Graphs library](https://github.com/ghaffarian/graphs) (a graph library in Java) and can process graph objects from that library, produced by any other program (such as [PROGEX](https://github.com/ghaffarian/progex)). JGRAM can also take graphs as input in several external formats; including:
- - [DOT](https://en.wikipedia.org/wiki/DOT_\(graph_description_language\)) files (output from PROGEX)
- - [JSON](https://en.wikipedia.org/wiki/JSON) files (output from PROGEX)
+ - [DOT](https://en.wikipedia.org/wiki/DOT_\(graph_description_language\)) files
+ - [JSON](https://en.wikipedia.org/wiki/JSON) files
  - Graph Databases (e.g. [Neo4J](https://neo4j.com))
 
 This is an internal project by members of our lab from [Amirkabir University of Technology](http://aut.ac.ir), as a sub-project of the PhD thesis of [Seyed Mohammad Ghaffarian](http://linkedin.com/in/smghaffarian). Seyed Mohammad Ghaffarian is the owner, designer, and main developer of JGRAM.
