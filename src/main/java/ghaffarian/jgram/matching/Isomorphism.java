@@ -13,7 +13,6 @@ import ghaffarian.graphs.Edge;
  */
 public class Isomorphism<V,E> extends Matching<V,E> {
     
-    
     /**
      * Creates a new Isomorphism object, 
      * with isomorphism set to false, and 

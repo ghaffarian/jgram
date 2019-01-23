@@ -7,7 +7,7 @@ import ghaffarian.graphs.Edge;
 
 /**
  * Matching of two graphs.
- * Objects of this class can hold the result of a graph matching operation.
+ * Objects of this class can hold the result of a graph-matching operation.
  * This class can be used both for exact (isomorphism) or inexact graph-matchings.
  * For exact graph-matching, the matching score is either 1 (isomorphic) or 0 (non-isomorphic).
  * For inexact graph-matching, the matching score can be any arbitrary floating-point value,
@@ -17,14 +17,14 @@ import ghaffarian.graphs.Edge;
  */
 public class Matching<V,E> {
     
-    /* package private */ float score;
+    protected float score;
     
-    /* package private */ Map<V,V> vertexCorrespondence;
+    protected Map<V,V> vertexCorrespondence;
     
-    /* package private */ Map<Edge<V,E>,Edge<V,E>> edgeCorrespondence;
+    protected Map<Edge<V,E>,Edge<V,E>> edgeCorrespondence;
     
     /**
-     * Creates a new Matching object, 
+     * Creates a new GraphMatching object, 
      * with score set to zero, and 
      * empty correspondence for vertices and edges.
      */
