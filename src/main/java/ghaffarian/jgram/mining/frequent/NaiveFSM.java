@@ -1,13 +1,15 @@
 /*** In The Name of Allah ***/
 package ghaffarian.jgram.mining.frequent;
 
+import ghaffarian.collections.MatcherLinkedHashMap;
 import ghaffarian.graphs.*;
+import ghaffarian.graphs.DefaultMatcher;
+import ghaffarian.graphs.Matcher;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,8 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
     private boolean miningDone;
     private Set<Graph<V,E>> finalResult;
     private List<Graph<V,E>> graphDataset;
+    private Matcher<V> vertexMatcher;
+    private Matcher<Edge<V,E>> edgeMatcher;
 
     /**
      * Construct a new instance of naive frequent-subgraph-mining.
@@ -57,17 +61,37 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
      */
     public NaiveFSM(float minSup, boolean maximal, boolean singleEdges, boolean connected) {
         MIN_SUP = minSup;
-        ONLY_MAXIMAL = maximal;
         miningDone = false;
+        ONLY_MAXIMAL = maximal;
         ONLY_CONNECTED = connected;
         ALLOW_SINGLE_EDGE = singleEdges;
+        edgeMatcher = new DefaultMatcher<>();
+        vertexMatcher = new DefaultMatcher<>();
+    }
+    
+    public void setVertexMatcher(Matcher<V> matcher) {
+        vertexMatcher = matcher;
+    }
+    
+    public Matcher<V> getVertexMatcher() {
+        return vertexMatcher;
+    }
+    
+    public void setEdgeMatcher(Matcher<Edge<V,E>> matcher) {
+        edgeMatcher = matcher;
+    }
+    
+    public Matcher<Edge<V,E>> getEdgeMatcher() {
+        return edgeMatcher;
     }
 
     @Override
     public Set<Graph<V, E>> mine(List<Graph<V, E>> graphSet) {
+        miningDone = false;
         this.graphDataset = graphSet;
         // 1. Calculate the frequency for all edges from all graphs
-        Map<Edge, Integer> allEdgesFrequencies = new LinkedHashMap<>(graphDataset.size() * AVRG_EDGE_PER_GRAPH, 0.8f);
+        Map<Edge<V,E>, Integer> allEdgesFrequencies = 
+                new MatcherLinkedHashMap<>(graphDataset.size() * AVRG_EDGE_PER_GRAPH, edgeMatcher);
         for (Graph graph: graphDataset) {
             Enumeration<Edge<V,E>> edges = graph.enumerateAllEdges();
             while (edges.hasMoreElements()) {
@@ -81,9 +105,9 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
         }
         // 2. Remove non-frequent edges
         int threshold = Math.round(MIN_SUP * graphDataset.size());
-        Iterator<Map.Entry<Edge, Integer>> it = allEdgesFrequencies.entrySet().iterator();
+        Iterator<Map.Entry<Edge<V,E>, Integer>> it = allEdgesFrequencies.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<Edge, Integer> entry = it.next();
+            Map.Entry<Edge<V,E>, Integer> entry = it.next();
             if (entry.getValue() < threshold)
                 it.remove();
         }
@@ -91,12 +115,12 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
         allEdgesFrequencies = CollectionUtils.sortByValue(allEdgesFrequencies);
         // 4. Start generating graphs using frequent edges and check their frequency
         Deque<Edge<V,E>> frequentEdges = new ArrayDeque<>(allEdgesFrequencies.size());
-        for (Map.Entry<Edge, Integer> edge: allEdgesFrequencies.entrySet())
+        for (Map.Entry<Edge<V,E>, Integer> edge: allEdgesFrequencies.entrySet())
             frequentEdges.add(edge.getKey());
         Set<Digraph<V,E>> frequentPatterns = new LinkedHashSet<>(Math.max(MIN_LIST_CAPACITY, 2 * threshold));
         while (!frequentEdges.isEmpty()) {
         //for (Edge<V,E> edge: allEdgesFrequencies.keySet()) {
-            Digraph<V,E> baseGraph = new Digraph<>();
+            Digraph<V,E> baseGraph = new Digraph<>(vertexMatcher, edgeMatcher);
             Edge<V,E> edge = frequentEdges.remove();
             //frequentEdges.remove(edge);
             baseGraph.addVertex(edge.source);
@@ -162,8 +186,11 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
             candidateEdges.push(edge);
         }
         // if it can be maximal add a copy of it
-        if (canBeMaximal && (ALLOW_SINGLE_EDGE || base.edgeCount() > 1))
-            freqSubgraphs.add(new Digraph<>(base));
+        if (canBeMaximal && (ALLOW_SINGLE_EDGE || base.edgeCount() > 1)) {
+            Digraph<V,E> copy = new Digraph<>(vertexMatcher, edgeMatcher);
+            copy.addGraph(base);
+            freqSubgraphs.add(copy);
+        }
         return canBeMaximal;
     }
     
@@ -207,5 +234,5 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
             return null;
         return finalResult;
     }
-
+    
 }
