@@ -4,7 +4,6 @@ package ghaffarian.jgram.mining.frequent;
 import ghaffarian.collections.MatcherLinkedHashMap;
 import ghaffarian.graphs.*;
 import ghaffarian.graphs.DefaultMatcher;
-import ghaffarian.graphs.Matcher;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
@@ -23,7 +22,7 @@ import jgram.utils.CollectionUtils;
  * 
  * @author Seyed Mohammad Ghaffarian
  */
-public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
+public class NaiveFSM<V, E> extends FrequentSubgraphMining<V, E> {
     
     private final int AVRG_EDGE_PER_GRAPH = 16;
     private final int MIN_LIST_CAPACITY = 16;
@@ -36,8 +35,6 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
     private boolean miningDone;
     private Set<Graph<V,E>> finalResult;
     private List<Graph<V,E>> graphDataset;
-    private Matcher<V> vertexMatcher;
-    private Matcher<Edge<V,E>> edgeMatcher;
 
     /**
      * Construct a new instance of naive frequent-subgraph-mining.
@@ -69,22 +66,6 @@ public class NaiveFSM<V,E> implements FrequentSubgraphMining<V,E> {
         vertexMatcher = new DefaultMatcher<>();
     }
     
-    public void setVertexMatcher(Matcher<V> matcher) {
-        vertexMatcher = matcher;
-    }
-    
-    public Matcher<V> getVertexMatcher() {
-        return vertexMatcher;
-    }
-    
-    public void setEdgeMatcher(Matcher<Edge<V,E>> matcher) {
-        edgeMatcher = matcher;
-    }
-    
-    public Matcher<Edge<V,E>> getEdgeMatcher() {
-        return edgeMatcher;
-    }
-
     @Override
     public Set<Graph<V, E>> mine(List<Graph<V, E>> graphSet) {
         miningDone = false;
